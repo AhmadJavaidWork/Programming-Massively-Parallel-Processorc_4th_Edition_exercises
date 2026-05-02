@@ -1,6 +1,9 @@
+#include <cuda_device_runtime_api.h>
 #include <cuda_runtime.h>
-#include <stdlib.h>
+#include <cuda_runtime_api.h>
+#include <driver_types.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 __global__ void vecAddKernel(float *A, float *B, float *C, int n) {
     int i = threadIdx.x + blockDim.x * blockIdx.x;
@@ -47,6 +50,13 @@ void vecAdd(float *A_h, float *B_h, float *C_h, int n) {
     int blocks = (n + threads - 1) / threads;
     vecAddKernel<<<blocks, threads>>>(A_d, B_d, C_d, n);
 
+    cudaDeviceSynchronize();
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+
     cudaMemcpy(C_h, C_d, size, cudaMemcpyDeviceToHost);
 
     err = cudaFree(A_d);
@@ -87,6 +97,10 @@ int main() {
     vecAdd(A_h, B_h, C_h, size);
 
     printf("Done\n");
+
+    free(A_h);
+    free(B_h);
+    free(C_h);
 
     return 0;
 }
