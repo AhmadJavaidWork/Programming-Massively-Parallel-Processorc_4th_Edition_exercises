@@ -27,5 +27,9 @@ int main() {
 
     printf("Done \n");
 
+    free(A_h);
+    free(B_h);
+    free(C_h);
+
     return 0;
 }
