@@ -48,7 +48,7 @@ void vecAdd(float *A_h, float *B_h, float *C_h, int m, int n, int p) {
         exit(EXIT_FAILURE);
     }
 
-    dim3 dimGrid(ceil(p / 16.0), ceil(p / 16.0), 1);
+    dim3 dimGrid((p + 16.0 - 1) / 16.0, (m + 16.0 - 1) / 16.0, 1);
     dim3 dimBlock(16, 16, 1);
 
     MatrixMulKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, m, n, p);
