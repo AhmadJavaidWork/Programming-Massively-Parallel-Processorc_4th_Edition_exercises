@@ -15,6 +15,34 @@ __global__ void MatrixMulKernel(float *A, float *B, float *C, int m, int n, int 
     }
 }
 
+__global__ void MatricxMulRow(float *A, float *B, float *C, int m, int n, int p) {
+    int row = blockDim.y * blockIdx.y + threadIdx.y;
+
+    if (row < m) {
+        for (int col = 0; col < p; ++col) {
+            float pValue = 0;
+            for (int i = 0; i < n; ++i) {
+                pValue += A[row * n + i] * B[i * p + col];
+            }
+            C[row * p + col] = pValue;
+        }
+    }
+}
+
+__global__ void MatrixMulCol(float *A, float *B, float *C, int m, int n, int p) {
+    int col = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (col < p) {
+        for (int row = 0; row < m; ++row) {
+            float pValue = 0;
+            for (int i = 0; i < n; i++) {
+                pValue += A[row * n + i] * B[i * p + col];
+            }
+            C[row * p + col] = pValue;
+        }
+    }
+}
+
 void vecAdd(float *A_h, float *B_h, float *C_h, int m, int n, int p) {
     float *A_d, *B_d, *C_d;
 
@@ -51,7 +79,9 @@ void vecAdd(float *A_h, float *B_h, float *C_h, int m, int n, int p) {
     dim3 dimGrid((p + 16.0 - 1) / 16.0, (m + 16.0 - 1) / 16.0, 1);
     dim3 dimBlock(16, 16, 1);
 
-    MatrixMulKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, m, n, p);
+    // MatrixMulKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, m, n, p);
+    // MatrixMulRow<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, m, n, p);
+    MatrixMulCol<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, m, n, p);
 
     cudaDeviceSynchronize();
     err = cudaGetLastError();
