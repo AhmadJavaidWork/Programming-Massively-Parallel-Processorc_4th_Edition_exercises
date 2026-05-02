@@ -54,7 +54,11 @@ void vecAdd(float *A_h, float *B_h, float *C_h, int n) {
         exit(EXIT_FAILURE);
     }
 
-    cudaMemcpy(C_h, C_d, size, cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(C_h, C_d, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess) {
+        printf("%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
 
     err = cudaFree(A_d);
     if (err != cudaSuccess) {
